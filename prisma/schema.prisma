@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model cabeza {
+  id_cabeza      Int              @id @default(autoincrement())
+  cabeza         String           @db.VarChar(100)
+  usuario_cabeza usuario_cabeza[]
+}
+
+model clase {
+  id_clase      Int             @id
+  nombre_clase  String?         @db.VarChar(100)
+  curso_id      Int?
+  curso         curso?          @relation(fields: [curso_id], references: [id_curso], onDelete: Restrict, onUpdate: Restrict, map: "clase_ibfk_1")
+  usuario_clase usuario_clase[]
+
+  @@index([curso_id], map: "curso_id")
+}
+
+model curso {
+  id_curso     Int       @id
+  nombre_curso String?   @db.VarChar(100)
+  clase        clase[]
+  leccion      leccion[]
+}
+
+model leccion {
+  id_leccion     Int     @id
+  nombre_leccion String? @db.VarChar(100)
+  curso_id       Int?
+  curso          curso?  @relation(fields: [curso_id], references: [id_curso], onDelete: Restrict, onUpdate: Restrict, map: "leccion_ibfk_1")
+  tarea          tarea[]
+
+  @@index([curso_id], map: "curso_id")
+}
+
+model tarea {
+  id_tarea      Int             @id
+  nombre_tarea  String?         @db.VarChar(100)
+  leccion_id    Int?
+  leccion       leccion?        @relation(fields: [leccion_id], references: [id_leccion], onDelete: Restrict, onUpdate: Restrict, map: "tarea_ibfk_1")
+  usuario_tarea usuario_tarea[]
+
+  @@index([leccion_id], map: "leccion_id")
+}
+
+model torso {
+  id_torso      Int             @id @default(autoincrement())
+  torso         String          @db.VarChar(100)
+  usuario_torso usuario_torso[]
+}
+
+model usuario {
+  id_usuario     Int              @id
+  usuario        String?          @db.VarChar(100)
+  contrase_a     String?          @map("contraseña") @db.VarChar(100)
+  rol            String?          @db.VarChar(50)
+  nombre         String?          @db.VarChar(100)
+  apellido       String?          @db.VarChar(100)
+  usuario_cabeza usuario_cabeza[]
+  usuario_clase  usuario_clase[]
+  usuario_tarea  usuario_tarea[]
+  usuario_torso  usuario_torso[]
+}
+
+model usuario_cabeza {
+  id_usuario_cabeza Int     @id @default(autoincrement())
+  usuario_id        Int
+  cabeza_id         Int
+  equipado          Boolean
+  cabeza            cabeza  @relation(fields: [cabeza_id], references: [id_cabeza], onUpdate: Restrict, map: "usuario_cabeza_ibfk_1")
+  usuario           usuario @relation(fields: [usuario_id], references: [id_usuario], onUpdate: Restrict, map: "usuario_cabeza_ibfk_2")
+
+  @@index([cabeza_id], map: "cabeza_id")
+  @@index([usuario_id], map: "usuario_id")
+}
+
+model usuario_clase {
+  id_usuario Int
+  id_clase   Int
+  usuario    usuario @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "usuario_clase_ibfk_1")
+  clase      clase   @relation(fields: [id_clase], references: [id_clase], onUpdate: Restrict, map: "usuario_clase_ibfk_2")
+
+  @@id([id_usuario, id_clase])
+  @@index([id_clase], map: "id_clase")
+}
+
+model usuario_tarea {
+  id_usuario       Int
+  id_tarea         Int
+  puntaje_obtenido Int?
+  usuario          usuario @relation(fields: [id_usuario], references: [id_usuario], onUpdate: Restrict, map: "usuario_tarea_ibfk_1")
+  tarea            tarea   @relation(fields: [id_tarea], references: [id_tarea], onUpdate: Restrict, map: "usuario_tarea_ibfk_2")
+
+  @@id([id_usuario, id_tarea])
+  @@index([id_tarea], map: "id_tarea")
+}
+
+model usuario_torso {
+  id_usuario_torso Int     @id @default(autoincrement())
+  usuario_id       Int
+  torso_id         Int
+  equipado         Boolean
+  torso            torso   @relation(fields: [torso_id], references: [id_torso], onUpdate: Restrict, map: "usuario_torso_ibfk_1")
+  usuario          usuario @relation(fields: [usuario_id], references: [id_usuario], onUpdate: Restrict, map: "usuario_torso_ibfk_2")
+
+  @@index([torso_id], map: "torso_id")
+  @@index([usuario_id], map: "usuario_id")
+}
